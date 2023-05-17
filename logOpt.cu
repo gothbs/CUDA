@@ -70,7 +70,7 @@ void LaplacienDeGaussienneGPU(unsigned char *donnees, unsigned char *nouvellesDo
 
     cudaStatus = cudaMemcpy(donneesSrcDevice, donneesSrc, size, cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
-        std::cerr << "Erreur lors de la copie des données source de l'hôte vers le GPU " +  " ligne : 73"  << std::endl;
+        std::cerr << "Erreur lors de la copie des données source de l'hôte vers le GPU ligne : 73"  << std::endl;
         cudaFree(donneesSrcDevice);
         cudaFree(donneesDstDevice);
         return;
