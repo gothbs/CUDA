@@ -25,83 +25,86 @@ __global__ void cudaFlouBoite(unsigned char *donneesSrc, unsigned char *donneesD
     }
 }
 
-void FlouBoiteGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations, int blockSizeX, int blockSizeY) {
-    unsigned char *donneesSrc = donnees;
-    unsigned char *donneesDst = nouvellesDonnees;
-    
-    unsigned char *donneesSrcDevice;
-    unsigned char *donneesDstDevice;
-    
-    size_t size = largeur * hauteur * bpp * sizeof(unsigned char);
-    
-    cudaError_t cudaStatus;
-    
-    cudaStatus = cudaMalloc((void **)&donneesSrcDevice, size);
-    if (cudaStatus != cudaSuccess) {
-        std::cerr << "Erreur lors de l'allocation de mémoire sur le GPU pour les données source" << std::endl;
-        return;
-    }
-    
-    cudaStatus = cudaMalloc((void **)&donneesDstDevice, size);
-  
-    if (cudaStatus != cudaSuccess) {
-        std::cerr << "Erreur lors de l'allocation de mémoire sur le GPU pour les données de destination" << std::endl;
-        cudaFree(donneesSrcDevice);
-        return;
-    }
-    
-    cudaStatus = cudaMemcpy(donneesSrcDevice, donneesSrc, size, cudaMemcpyHostToDevice);
-   
-    if (cudaStatus != cudaSuccess) {
-        std::cerr << "Erreur lors de la copie des données source de l'hôte vers le GPU" << std::endl;
+    void FlouBoiteGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations, int blockSizeX, int blockSizeY) {
+            unsigned char *donneesSrc = donnees;
+            unsigned char *donneesDst = nouvellesDonnees;
+            
+            unsigned char *donneesSrcDevice;
+            unsigned char *donneesDstDevice;
+            
+            size_t size = largeur * hauteur * bpp * sizeof(unsigned char);
+            
+            cudaError_t cudaStatus;
+            
+            cudaStatus = cudaMalloc((void **)&donneesSrcDevice, size);
+            if (cudaStatus != cudaSuccess) {
+                std::cerr << "Erreur lors de l'allocation de mémoire sur le GPU pour les données source" << std::endl;
+                return;
+            }
+            
+            cudaStatus = cudaMalloc((void **)&donneesDstDevice, size);
+        
+            if (cudaStatus != cudaSuccess) {
+                std::cerr << "Erreur lors de l'allocation de mémoire sur le GPU pour les données de destination" << std::endl;
+                cudaFree(donneesSrcDevice);
+                return;
+            }
+            
+            cudaStatus = cudaMemcpy(donneesSrcDevice, donneesSrc, size, cudaMemcpyHostToDevice);
+        
+            if (cudaStatus != cudaSuccess) {
+                std::cerr << "Erreur lors de la copie des données source de l'hôte vers le GPU" << std::endl;
+                cudaFree(donneesSrcDevice);
+                cudaFree(donneesDstDevice);
+                return;
+            }
+            
+            dim3 blockSize(blockSizeX, blockSizeY);
+            dim3 gridSize((largeur + blockSize.x - 1) / blockSize.x, (hauteur + blockSize.y - 1) / blockSize.y);
+            
+            // Création
+            cudaStream_t stream1, stream2;
+            cudaStreamCreate(&stream1);
+            cudaStreamCreate(&stream2);
+            for (int i = 0; i < iterations; ++i) {
+            if (i % 2 == 0) {
+                cudaFlouBoite<<<gridSize, blockSize, 0, stream1>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
+            } else {
+                cudaFlouBoite<<<gridSize, blockSize, 0, stream2>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
+            }
+            
+            cudaStatus = cudaGetLastError();
+            if (cudaStatus != cudaSuccess) {
+                std::cerr << "Erreur lors de l'exécution du kernel CUDA" << std::endl;
+                cudaFree(donneesSrcDevice);
+                cudaFree(donneesDstDevice);
+                return;
+            }
+
+            std::swap(donneesSrcDevice, donneesDstDevice);
+
+            // Synchronisation des streams
+            cudaStreamSynchronize(stream1);
+            cudaStreamSynchronize(stream2);
+        }
+
+        cudaStreamDestroy(stream1);
+        cudaStreamDestroy(stream2);
+
+        cudaMemcpyAsync(donneesDst, donneesSrcDevice, size, cudaMemcpyDeviceToHost);
+        cudaStatus = cudaGetLastError();
+        if (cudaStatus != cudaSuccess) {
+            std::cerr << "Erreur lors de la copie des données de destination du GPU vers l'hôte" << std::endl;
+            cudaFree(donneesSrcDevice);
+            cudaFree(donneesDstDevice);
+            return;
+        }
+
         cudaFree(donneesSrcDevice);
         cudaFree(donneesDstDevice);
-        return;
-    }
-    
-    dim3 blockSize(blockSizeX, blockSizeY);
-    dim3 gridSize((largeur + blockSize.x - 1) / blockSize.x, (hauteur + blockSize.y - 1) / blockSize.y);
-    
-    // Création
-    cudaStream_t stream1, stream2;
-    cudaStreamCreate(&stream1);
-    cudaStreamCreate(&stream2);
-    for (int i = 0; i < iterations; ++i) {
-    if (i % 2 == 0) {
-        cudaFlouBoite<<<gridSize, blockSize, 0, stream1>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
-    } else {
-        cudaFlouBoite<<<gridSize, blockSize, 0, stream2>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
-    }
-    
-    cudaStatus = cudaGetLastError();
-    if (cudaStatus != cudaSuccess) {
-        std::cerr << "Erreur lors de l'exécution du kernel CUDA" << std::endl;
-        cudaFree(donneesSrcDevice);
-        cudaFree(donneesDstDevice);
-        return;
+
     }
 
-    std::swap(donneesSrcDevice, donneesDstDevice);
-
-     // Synchronisation des streams
-    cudaStreamSynchronize(stream1);
-    cudaStreamSynchronize(stream2);
-}
-
-cudaStreamDestroy(stream1);
-cudaStreamDestroy(stream2);
-
-cudaMemcpyAsync(donneesDst, donneesSrcDevice, size, cudaMemcpyDeviceToHost);
-cudaStatus = cudaGetLastError();
-if (cudaStatus != cudaSuccess) {
-    std::cerr << "Erreur lors de la copie des données de destination du GPU vers l'hôte" << std::endl;
-    cudaFree(donneesSrcDevice);
-    cudaFree(donneesDstDevice);
-    return;
-}
-
-cudaFree(donneesSrcDevice);
-cudaFree(donneesDstDevice);
 int main(int argc, char *argv[]) {
 unsigned int image;
 // Initialisation de DevIL
