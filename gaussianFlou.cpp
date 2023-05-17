@@ -2,17 +2,8 @@
 #include <cmath>
 #include <IL/il.h>
 
-// Le noyau du filtre gaussien
-float noyauGaussien[5][5] = {
-    {1.0f, 4.0f,  7.0f,  4.0f, 1.0f},
-    {4.0f, 16.0f, 26.0f, 16.0f, 4.0f},
-    {7.0f, 26.0f, 41.0f, 26.0f, 7.0f},
-    {4.0f, 16.0f, 26.0f, 16.0f, 4.0f},
-    {1.0f, 4.0f,  7.0f,  4.0f, 1.0f}
-};
-
 // Normaliser le noyau du filtre gaussien
-void normaliserNoyauGaussien() {
+void normaliserNoyauGaussien(float noyauGaussien[5][5] ) {
     float somme = 0;
     for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 5; ++j) {
@@ -28,6 +19,15 @@ void normaliserNoyauGaussien() {
 
 // Appliquer le flou gaussien sur l'image
 void flouGaussien(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations) {
+// Le noyau du filtre gaussien
+float noyauGaussien[5][5] = {
+    {1.0f, 4.0f,  7.0f,  4.0f, 1.0f},
+    {4.0f, 16.0f, 26.0f, 16.0f, 4.0f},
+    {7.0f, 26.0f, 41.0f, 26.0f, 7.0f},
+    {4.0f, 16.0f, 26.0f, 16.0f, 4.0f},
+    {1.0f, 4.0f,  7.0f,  4.0f, 1.0f}
+};
+normaliserNoyauGaussien(noyauGaussien);
     unsigned char *donneesSrc = donnees;
     unsigned char *donneesDst = nouvellesDonnees;
 
@@ -80,7 +80,6 @@ int main(int argc, char *argv[]) {
 
     int iterations = std::stoi(argv[2]);
 
-    normaliserNoyauGaussien();
     // Appliquer le flou gaussien sur l'image avec le nombre d'itérations spécifié
     flouGaussien(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations);
 
