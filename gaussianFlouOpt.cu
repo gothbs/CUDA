@@ -28,11 +28,17 @@ __global__ void applyGaussianBlur(unsigned char *donneesSrc, unsigned char *donn
         return;
     }
 
+    extern __shared__ float sharedNoyauGaussien[];
+    if (threadIdx.x < 5 && threadIdx.y < 5) {
+        sharedNoyauGaussien[threadIdx.y * 5 + threadIdx.x] = noyauGaussien[threadIdx.y * 5 + threadIdx.x];
+    }
+    __syncthreads();
+
     for (int c = 0; c < bpp; ++c) {
         float somme = 0;
         for (int ky = -2; ky <= 2; ++ky) {
             for (int kx = -2; kx <= 2; ++kx) {
-                somme += donneesSrc[((y + ky) * largeur + (x + kx)) * bpp + c] * noyauGaussien[(ky + 2) * 5 + (kx + 2)];
+                somme += donneesSrc[((y + ky) * largeur + (x + kx)) * bpp + c] * sharedNoyauGaussien[(ky + 2) * 5 + (kx + 2)];
             }
         }
         donneesDst[(y * largeur + x) * bpp + c] = somme;
@@ -63,19 +69,24 @@ void flouGaussienGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, in
 
     cudaMemcpy(devDonneesSrc, donnees, largeur * hauteur * bpp * sizeof(unsigned char), cudaMemcpyHostToDevice);
 
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+
     for (int it = 0; it < iterations; ++it) {
         if (it < iterations - 1) {
-            applyGaussianBlur<<<gridSize, blockSize>>>(devDonneesSrc, devDonneesDst, largeur, hauteur, bpp, devNoyauGaussien);
+            applyGaussianBlur<<<gridSize, blockSize, 5 * 5 * sizeof(float), stream>>>(devDonneesSrc, devDonneesDst, largeur, hauteur, bpp, devNoyauGaussien);
             unsigned char *temp = devDonneesSrc;
             devDonneesSrc = devDonneesDst;
             devDonneesDst = temp;
         }
         else {
-            applyGaussianBlur<<<gridSize, blockSize>>>(devDonneesSrc, devDonneesDst, largeur, hauteur, bpp, devNoyauGaussien);
+            applyGaussianBlur<<<gridSize, blockSize, 5 * 5 * sizeof(float), stream>>>(devDonneesSrc, devDonneesDst, largeur, hauteur, bpp, devNoyauGaussien);
         }
     }
 
-    cudaMemcpy(nouvellesDonnees, devDonneesDst, largeur * hauteur * bpp * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+    cudaMemcpyAsync(nouvellesDonnees, devDonneesDst, largeur * hauteur * bpp * sizeof(unsigned char), cudaMemcpyDeviceToHost, stream);
+
+    cudaStreamDestroy(stream);
 
     cudaFree(devDonneesSrc);
     cudaFree(devDonneesDst);
@@ -114,3 +125,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
