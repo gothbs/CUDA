@@ -6,7 +6,7 @@
 __global__ void cudaLaplacienDeGaussienne(unsigned char *donneesSrc, unsigned char *donneesDst, int largeur, int hauteur, int bpp, int blockSizeX, int blockSizeY) {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
-    
+
     __shared__ unsigned char sharedBlock[16][16][4];
 
     int masque[5][5] = {
@@ -32,10 +32,10 @@ __global__ void cudaLaplacienDeGaussienne(unsigned char *donneesSrc, unsigned ch
             __syncthreads();
         }
 
-        if (threadIdx.x >= blockSizeX/2 && threadIdx.y >= blockSizeY/2 && threadIdx.x < blockSizeX/2 + blockSizeX && threadIdx.y < blockSizeY/2 + blockSizeY) {
+        if (threadIdx.x >= blockSizeX / 2 && threadIdx.y >= blockSizeY / 2 && threadIdx.x < blockSizeX / 2 + blockSizeX && threadIdx.y < blockSizeY / 2 + blockSizeY) {
             for (int fy = -2; fy <= 2; ++fy) {
                 for (int fx = -2; fx <= 2; ++fx) {
-                    somme += masque[fy + 2][fx + 2] * sharedBlock[threadIdx.y - blockSizeY/2 + fy][threadIdx.x - blockSizeX/2 + fx][c];
+                    somme += masque[fy + 2][fx + 2] * sharedBlock[threadIdx.y - blockSizeY / 2 + fy][threadIdx.x - blockSizeX / 2 + fx][c];
                 }
             }
         }
@@ -46,6 +46,7 @@ __global__ void cudaLaplacienDeGaussienne(unsigned char *donneesSrc, unsigned ch
 
 void LaplacienDeGaussienneGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations, int blockSizeX, int blockSizeY) {
     unsigned char *donneesSrc = donnees;
+    unsigned char *donneesDst = nouvellesDonnees;
 
     unsigned char *donneesSrcDevice;
     unsigned char *donneesDstDevice;
@@ -85,7 +86,8 @@ void LaplacienDeGaussienneGPU(unsigned char *donnees, unsigned char *nouvellesDo
     for (int i = 0; i < iterations; ++i) {
         if (i % 2 == 0) {
             cudaLaplacienDeGaussienne<<<gridSize, blockSize, 0, stream1>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp, blockSizeX, blockSizeY);
-        } else {
+        }
+        else {
             cudaLaplacienDeGaussienne<<<gridSize, blockSize, 0, stream2>>>(donneesDstDevice, donneesSrcDevice, largeur, hauteur, bpp, blockSizeX, blockSizeY);
         }
 
@@ -104,12 +106,12 @@ void LaplacienDeGaussienneGPU(unsigned char *donnees, unsigned char *nouvellesDo
     cudaStreamSynchronize(stream2);
 
     if (iterations % 2 == 1) {
-        cudaMemcpyAsync(nouvellesDonnees, donneesSrcDevice, size, cudaMemcpyDeviceToHost);
-    } else {
-        cudaMemcpyAsync(nouvellesDonnees, donneesDstDevice, size, cudaMemcpyDeviceToHost);
+        cudaStatus = cudaMemcpyAsync(donneesDst, donneesSrcDevice, size, cudaMemcpyDeviceToHost, stream1);
+    }
+    else {
+        cudaStatus = cudaMemcpyAsync(donneesDst, donneesDstDevice, size, cudaMemcpyDeviceToHost, stream1);
     }
 
-    cudaStatus = cudaGetLastError();
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de la copie des données de destination du GPU vers l'hôte" << std::endl;
         cudaFree(donneesSrcDevice);
