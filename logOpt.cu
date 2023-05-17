@@ -7,7 +7,7 @@ __global__ void cudaLaplacienDeGaussienne(unsigned char *donneesSrc, unsigned ch
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
     
-    __shared__ unsigned char sharedBlock[blockSizeY][blockSizeX][4];
+    __shared__ unsigned char sharedBlock[16][16][4];
 
     int masque[5][5] = {
         {0, 0, -1, 0, 0},
