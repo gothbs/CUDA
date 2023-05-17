@@ -3,16 +3,16 @@
 #include <IL/il.h>
 #include <cuda_runtime.h>
 
-__global__ void normalizeKernel(float *noyauGaussien) {
+void normaliserNoyauGaussien(float noyauGaussien[5][5] ) {
     float somme = 0;
     for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 5; ++j) {
-            somme += noyauGaussien[i * 5 + j];
+            somme += noyauGaussien[i][j];
         }
     }
     for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 5; ++j) {
-            noyauGaussien[i * 5 + j] /= somme;
+            noyauGaussien[i][j] /= somme;
         }
     }
 }
@@ -47,6 +47,8 @@ void flouGaussienGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, in
         {4.0f, 16.0f, 26.0f, 16.0f, 4.0f},
         {1.0f, 4.0f,  7.0f,  4.0f, 1.0f}
     };
+
+    normaliserNoyauGaussien(noyauGaussien);
 
     float *devNoyauGaussien;
     cudaMalloc((void**)&devNoyauGaussien, 5 * 5 * sizeof(float));
