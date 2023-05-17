@@ -2,57 +2,7 @@
 #include <cmath>
 #include <IL/il.h>
 
-// Matrice du filtre LoG (Laplacien de Gaussienne) 5x5
-int filtre[5][5] = {
-    {0, 0, -1, 0, 0},
-    {0, -1, -2, -1, 0},
-    {-1, -2, 16, -2, -1},
-    {0, -1, -2, -1, 0},
-    {0, 0, -1, 0, 0}
-};
 
-
-/***  noire et blanc **/
-/**void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations) {
-    unsigned char *donneesSrc = donnees;
-    unsigned char *donneesDst = nouvellesDonnees;
-
-    for (int it = 0; it < iterations; ++it) {
-        for (int y = 0; y < hauteur; ++y) {
-            for (int x = 0; x < largeur; ++x) {
-                if (x < 2 || y < 2 || x + 2 >= largeur || y + 2 >= hauteur) {
-                    for (int c = 0; c < bpp; ++c) {
-                        donneesDst[(y * largeur + x) * bpp + c] = donneesSrc[(y * largeur + x) * bpp + c];
-                    }
-                    continue;
-                }
-
-                for (int c = 0; c < bpp; ++c) {
-                    int somme = 0;
-                    for (int ky = -2; ky <= 2; ++ky) {
-                        for (int kx = -2; kx <= 2; ++kx) {
-                            somme += donneesSrc[((y + ky) * largeur + (x + kx)) * bpp + c] * filtre[ky + 2][kx + 2];
-                        }
-                    }
-
-                    // Assurez-vous que la valeur est dans la plage valide [0, 255]
-                    if (somme < 0) somme = 0;
-                    if (somme > 255) somme = 255;
-
-                    donneesDst[(y * largeur + x) * bpp + c] = somme;
-                }
-            }
-        }
-
-        if (it < iterations - 1) {
-            unsigned char *temp = donneesSrc;
-            donneesSrc = donneesDst;
-            donneesDst = temp;
-        }
-    }
-}**/
-
-/** couleur **/
 
 void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations) {
     int masque[5][5] = {
