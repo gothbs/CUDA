@@ -42,7 +42,7 @@ __global__ void cudaFlouBoite(unsigned char *donneesSrc, unsigned char *donneesD
 
 void FlouBoiteGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations, int blockSizeX, int blockSizeY) {
     unsigned char *donneesSrc = donnees;
-    unsigned char *donneeosDst = nouvellesDonnees;
+    unsigned char *donneesDst = nouvellesDonnees;
     unsigned char *donneesSrcDevice;
     unsigned char *donneesDstDevice;
 
