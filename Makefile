@@ -17,7 +17,7 @@ flouSobelOperator: flouSobelOperator.cpp
 flouLaplacienDeGausse: flouLaplacienDeGausse.cpp
 	$(CC) $(CFLAGS) -o flouLaplacienDeGausse flouLaplacienDeGausse.cpp $(LIBS)
 
-flouBoxOptGpu: flouBox.cu
+flouBoxGpu: flouBox.cu
 	$(NVCC) $(CFLAGS) -o flouBoxGpu flouBox.cu $(LIBS)
 
 flouGaussienGpu: flouGaussien.cu
@@ -30,16 +30,16 @@ flouLaplacienDeGausseGpu: flouLaplacienDeGausse.cu
 	$(NVCC) $(CFLAGS) -o flouLaplacienDeGausseGpu flouLaplacienDeGausse.cu $(LIBS)
 
 flouBoxOpt: flouBoxOpt.cu
-	$(NVCC) $(CFLAGS) -o flouBoxOpt flouBox.cu $(LIBS)
+	$(NVCC) $(CFLAGS) -o flouBoxOpt flouBoxOpt.cu $(LIBS)
 
 flouGaussienOpt: flouGaussienOpt.cu
-	$(NVCC) $(CFLAGS) -o flouGaussienOpt flouGaussien.cu $(LIBS)
+	$(NVCC) $(CFLAGS) -o flouGaussienOpt flouGaussienOpt.cu $(LIBS)
 
 flouSobelOperatorOpt: flouSobelOperatorOpt.cu
-	$(NVCC) $(CFLAGS) -o flouSobelOperatorOpt flouSobelOperator.cu $(LIBS)
+	$(NVCC) $(CFLAGS) -o flouSobelOperatorOpt flouSobelOperatorOpt.cu $(LIBS)
 
 flouLaplacienDeGausseOpt: flouLaplacienDeGausseOpt.cu
-	$(NVCC) $(CFLAGS) -o flouLaplacienDeGausseOpt flouLaplacienDeGausse.cu $(LIBS)
+	$(NVCC) $(CFLAGS) -o flouLaplacienDeGausseOpt flouLaplacienDeGausseOpt.cu $(LIBS)
 
 clean:
-	rm -f flouBox flouGaussien flouSobelOperator flouLaplacienDeGausse  flouBoxGpu flouGaussienGpu flouSobelOperatorGpu flouLaplacienDeGausseGpu flouBoxOpt flouGaussienOpt flouSobelOperatorOpt flouLaplacienDeGausseOpt
+	rm -f flouBox flouGaussien flouSobelOperator flouLaplacienDeGausse flouBoxGpu flouGaussienGpu flouSobelOperatorGpu flouLaplacienDeGausseGpu flouBoxOpt flouGaussienOpt flouSobelOperatorOpt flouLaplacienDeGausseOpt
