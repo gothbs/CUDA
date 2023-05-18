@@ -89,7 +89,10 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
     }
 
     cudaMemcpyAsync(donneesDst, donneesDstDevice, size, cudaMemcpyDeviceToHost, stream1);
+    cudaMemcpyAsync(donneesDst, donneesDstDevice, size, cudaMemcpyDeviceToHost, stream2);
+    
     cudaStreamSynchronize(stream1);
+    cudaStreamSynchronize(stream2);
 
     cudaFree(donneesSrcDevice);
     cudaFree(donneesDstDevice);
