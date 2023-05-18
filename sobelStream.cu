@@ -56,8 +56,8 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
 
     size_t size = largeur * hauteur * bpp * sizeof(unsigned char);
 
-    cudaMalloc((void**)&donneesSrcDevice, size);
-    cudaMalloc((void**)&donneesDstDevice, size);
+    cudaMalloc((void **)&donneesSrcDevice, size);
+    cudaMalloc((void **)&donneesDstDevice, size);
 
     cudaMemcpy(donneesSrcDevice, donneesSrc, size, cudaMemcpyHostToDevice);
 
@@ -68,7 +68,7 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
     cudaStreamCreate(&stream1);
     cudaStreamCreate(&stream2);
 
-    size_t sharedMemSize = 3 * 3 * sizeof(int); // Taille de la mémoire partagée nécessaire pour les matrices Sobel
+    size_t sharedMemSize = 3 * 3 * sizeof(int);
 
     for (int i = 0; i < iterations; ++i) {
         if (i % 2 == 0) {
@@ -87,8 +87,14 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
 
         std::swap(donneesSrcDevice, donneesDstDevice);
 
-        cudaStreamSynchronize(stream1);
-        cudaStreamSynchronize(stream2);
+        cudaMemcpyAsync(donneesDst, donneesDstDevice, size, cudaMemcpyDeviceToHost);
+        cudaStatus = cudaGetLastError();
+        if (cudaStatus != cudaSuccess) {
+            std::cerr << "Erreur lors de la copie des données de destination du GPU vers l'hôte : " << cudaGetErrorString(cudaStatus) << std::endl;
+            cudaFree(donneesSrcDevice);
+            cudaFree(donneesDstDevice);
+            return;
+        }
     }
 
     cudaMemcpy(nouvellesDonnees, donneesDstDevice, size, cudaMemcpyDeviceToHost);
