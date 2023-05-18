@@ -49,28 +49,34 @@ __global__ void LaplacianOfGaussianCUDA(const unsigned char *input, unsigned cha
 }
 
 void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations) {
-    unsigned char *devDonnees = nullptr;
-    unsigned char *devNouvellesDonnees = nullptr;
+  
+    
     unsigned char *donneesDst = nouvellesDonnees;
+    unsigned char *donneesSrc = donnees;
+    unsigned char *donneesDst = nouvellesDonnees;
+
+    unsigned char *donneesSrcDevice;
+    unsigned char *donneesDstDevice;
 
     cudaError_t cudaStatus;
 
     size_t size = largeur * hauteur * bpp * sizeof(unsigned char);
 
-    cudaStatus = cudaMalloc((void**)&devDonnees, largeur * hauteur * bpp * sizeof(unsigned char));
+    cudaStatus = cudaMalloc((void **)&donneesSrcDevice, size);
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de l'allocation de mémoire sur le GPU pour les données source" << std::endl;
         return;
     }
 
-    cudaStatus = cudaMalloc((void**)&devNouvellesDonnees, largeur * hauteur * bpp * sizeof(unsigned char));
+    cudaStatus = cudaMalloc((void **)&donneesDstDevice, size);
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de l'allocation de mémoire sur le GPU pour les données de destination" << std::endl;
         cudaFree(devDonnees);
         return;
     }
 
-    cudaStatus = cudaMemcpy(devDonnees, donnees, largeur * hauteur * bpp * sizeof(unsigned char), cudaMemcpyHostToDevice);
+    cudaStatus = cudaMemcpy(donneesSrcDevice, donneesSrc, size, cudaMemcpyHostToDevice);
+
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de la copie des données source de l'hôte vers le GPU" << std::endl;
         cudaFree(devDonnees);
@@ -93,7 +99,7 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
     size_t sharedMemSize = 5 * 5 * sizeof(int);  // Taille de la mémoire partagée nécessaire pour le masque
 
     for (int i = 0; i < iterations; ++i) {
-        LaplacianOfGaussianCUDA<<<gridDim, blockDim, sharedMemSize, stream>>>(devDonnees, devNouvellesDonnees, largeur, hauteur, bpp);
+        LaplacianOfGaussianCUDA<<<gridDim, blockDim, sharedMemSize, stream>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
         cudaStatus = cudaGetLastError();
         if (cudaStatus != cudaSuccess) {
             std::cerr << "Erreur lors de l'exécution du kernel CUDA : " << cudaGetErrorString(cudaStatus) << std::endl;
@@ -103,9 +109,7 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
             return;
         }
 
-        unsigned char *temp = devDonnees;
-        devDonnees = devNouvellesDonnees;
-        devNouvellesDonnees = temp;
+        std::swap(donneesSrcDevice, donneesDstDevice);
     }
     
     cudaMemcpyAsync(donneesDst, donneesSrcDevice, size, cudaMemcpyDeviceToHost, stream);
@@ -120,8 +124,9 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
         return;
     }
 
-    cudaFree(devDonnees);
-    cudaFree(devNouvellesDonnees);
+    
+    cudaFree(donneesSrcDevice);
+    cudaFree(donneesDstDevice);
     cudaStreamDestroy(stream);
 }
 
