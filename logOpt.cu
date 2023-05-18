@@ -99,15 +99,16 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
             return;
         }
 
-        cudaStreamSynchronize(stream);
-
         unsigned char *temp = devDonnees;
         devDonnees = devNouvellesDonnees;
         devNouvellesDonnees = temp;
     }
-
-    cudaMemcpy(nouvellesDonnees, devNouvellesDonnees, largeur * hauteur * bpp * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+    
+    
+    cudaMemcpyAsync(donneesDst, donneesSrcDevice, size, cudaMemcpyDeviceToHost, stream);
+    cudaStreamSynchronize(stream);
     cudaStatus = cudaGetLastError();
+    
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de la copie des données de destination du GPU vers l'hôte : " << cudaGetErrorString(cudaStatus) << std::endl;
         cudaFree(devDonnees);
