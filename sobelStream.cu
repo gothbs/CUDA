@@ -86,18 +86,10 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
         }
 
         std::swap(donneesSrcDevice, donneesDstDevice);
-
-        cudaMemcpyAsync(donneesDst, donneesDstDevice, size, cudaMemcpyDeviceToHost);
-        cudaStatus = cudaGetLastError();
-        if (cudaStatus != cudaSuccess) {
-            std::cerr << "Erreur lors de la copie des données de destination du GPU vers l'hôte : " << cudaGetErrorString(cudaStatus) << std::endl;
-            cudaFree(donneesSrcDevice);
-            cudaFree(donneesDstDevice);
-            return;
-        }
     }
 
-    cudaMemcpy(nouvellesDonnees, donneesDstDevice, size, cudaMemcpyDeviceToHost);
+    cudaMemcpyAsync(donneesDst, donneesDstDevice, size, cudaMemcpyDeviceToHost, stream1);
+    cudaStreamSynchronize(stream1);
 
     cudaFree(donneesSrcDevice);
     cudaFree(donneesDstDevice);
@@ -128,21 +120,17 @@ int main(int argc, char *argv[]) {
     int blockSizeX = std::stoi(argv[3]);
     int blockSizeY = std::stoi(argv[4]);
 
-    // Appliquer l'opérateur de Sobel sur l'image avec le nombre d'itérations spécifié
     SobelGPU(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations, blockSizeX, blockSizeY);
 
-    // Mettre à jour l'image avec les données traitées
     ilTexImage(largeur, hauteur, 1, bpp, format, IL_UNSIGNED_BYTE, nouvellesDonnees);
 
-    // Activer l'écrasement de fichier lors de la sauvegarde
     ilEnable(IL_FILE_OVERWRITE);
     ilSaveImage(argv[5]);
 
-    // Supprimer l'image de la mémoire de DevIL
     ilDeleteImages(1, &image);
 
-    // Libérer la mémoire allouée pour les nouvelles données de l'image
     delete[] nouvellesDonnees;
 
     return 0;
 }
+n°
