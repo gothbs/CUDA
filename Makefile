@@ -1,28 +1,20 @@
-CXX=g++
-CXXFLAGS=-O3 -march=native
-LDLIBS=-lm -lIL
+CC = g++
+CFLAGS = -std=c++11
+LIBS = -lIL
 
-SRCS_CPP = flouBox.cpp flouGaussien.cpp flouSobelOperator.cpp flouLaplacienDeGausse.cpp
-SRCS_CU = flouBox.cu flouGaussien.cu flouSobelOperator.cu flouLaplacienDeGausse.cu flouBoxOpt.cu flouGaussienOpt.cu flouSobelOperatorOpt.cu flouLaplacienDeGausseOpt.cu
+all: flouBox flouGaussien flouSobelOperator flouLaplacienDeGausse
 
-OBJS_CPP = $(SRCS_CPP:.cpp=.o)
-OBJS_CU = $(SRCS_CU:.cu=.o)
+flouBox: flouBox.cpp
+	$(CC) $(CFLAGS) $(LIBS) -o flouBox flouBox.cpp
 
-all: flou_cpp flou_cu
+flouGaussien: flouGaussien.cpp
+	$(CC) $(CFLAGS) $(LIBS) -o flouGaussien flouGaussien.cpp
 
-flou_cpp: $(OBJS_CPP)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDLIBS)
+flouSobelOperator: flouSobelOperator.cpp
+	$(CC) $(CFLAGS) $(LIBS) -o flouSobelOperator flouSobelOperator.cpp
 
-flou_cu: $(OBJS_CU)
-	nvcc -o $@ $^ $(LDLIBS)
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-%.o: %.cu
-	nvcc -c -o $@ $<
-
-.PHONY: clean
+flouLaplacienDeGausse: flouLaplacienDeGausse.cpp
+	$(CC) $(CFLAGS) $(LIBS) -o flouLaplacienDeGausse flouLaplacienDeGausse.cpp
 
 clean:
-	rm -f flou_cpp flou_cu $(OBJS_CPP) $(OBJS_CU)
+	rm -f flouBox flouGaussien flouSobelOperator flouLaplacienDeGausse
