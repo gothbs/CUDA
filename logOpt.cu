@@ -51,7 +51,11 @@ __global__ void LaplacianOfGaussianCUDA(const unsigned char *input, unsigned cha
 void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations) {
     unsigned char *devDonnees = nullptr;
     unsigned char *devNouvellesDonnees = nullptr;
+    unsigned char *donneesDst = nouvellesDonnees;
+
     cudaError_t cudaStatus;
+
+    size_t size = largeur * hauteur * bpp * sizeof(unsigned char);
 
     cudaStatus = cudaMalloc((void**)&devDonnees, largeur * hauteur * bpp * sizeof(unsigned char));
     if (cudaStatus != cudaSuccess) {
@@ -104,11 +108,10 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
         devNouvellesDonnees = temp;
     }
     
-    
     cudaMemcpyAsync(donneesDst, donneesSrcDevice, size, cudaMemcpyDeviceToHost, stream);
     cudaStreamSynchronize(stream);
+    //cudaMemcpy(nouvellesDonnees, devNouvellesDonnees, largeur * hauteur * bpp * sizeof(unsigned char), cudaMemcpyDeviceToHost);
     cudaStatus = cudaGetLastError();
-    
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de la copie des données de destination du GPU vers l'hôte : " << cudaGetErrorString(cudaStatus) << std::endl;
         cudaFree(devDonnees);
