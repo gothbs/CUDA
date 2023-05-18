@@ -117,8 +117,8 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
     cudaStatus = cudaGetLastError();
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de la copie des données de destination du GPU vers l'hôte : " << cudaGetErrorString(cudaStatus) << std::endl;
-        cudaFree(devDonnees);
-        cudaFree(devNouvellesDonnees);
+        cudaFree(donneesDst);
+        cudaFree(donneesSrcDevice);
         cudaStreamDestroy(stream);
         return;
     }
