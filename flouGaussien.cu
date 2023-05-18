@@ -39,7 +39,7 @@ __global__ void applyGaussianBlur(unsigned char *donneesSrc, unsigned char *donn
     }
 }
 
-void flouGaussienGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations) {
+void flouGaussienGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations, int blockSizeX, int blockSizeY) {
     float noyauGaussien[5][5] = {
         {1.0f, 4.0f,  7.0f,  4.0f, 1.0f},
         {4.0f, 16.0f, 26.0f, 16.0f, 4.0f},
@@ -54,9 +54,8 @@ void flouGaussienGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, in
     cudaMalloc((void**)&devNoyauGaussien, 5 * 5 * sizeof(float));
     cudaMemcpy(devNoyauGaussien, noyauGaussien, 5 * 5 * sizeof(float), cudaMemcpyHostToDevice);
 
-    dim3 blockSize(16, 16);
+    dim3 blockSize(blockSizeX, blockSizeY);
     dim3 gridSize((largeur + blockSize.x - 1) / blockSize.x, (hauteur + blockSize.y - 1) / blockSize.y);
-
     unsigned char *devDonneesSrc, *devDonneesDst;
     cudaMalloc((void**)&devDonneesSrc, largeur * hauteur * bpp * sizeof(unsigned char));
     cudaMalloc((void**)&devDonneesDst, largeur * hauteur * bpp * sizeof(unsigned char));
@@ -101,13 +100,15 @@ int main(int argc, char *argv[]) {
     unsigned char *nouvellesDonnees = new unsigned char[largeur * hauteur * bpp];
 
     int iterations = std::stoi(argv[2]);
+    int blockSizeX = std::stoi(argv[3]);
+    int blockSizeY = std::stoi(argv[4]);
 
-    flouGaussienGPU(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations);
+    flouGaussienGPU(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations, blockSizeX, blockSizeY);
 
     ilTexImage(largeur, hauteur, 1, bpp, format, IL_UNSIGNED_BYTE, nouvellesDonnees);
 
     ilEnable(IL_FILE_OVERWRITE);
-    ilSaveImage(argv[3]);
+    ilSaveImage(argv[5]);
 
     ilDeleteImages(1, &image);
     delete[] nouvellesDonnees;

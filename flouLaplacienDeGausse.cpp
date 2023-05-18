@@ -40,7 +40,7 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
             nouvellesDonnees = temp;
         }
     }
-}
+
 
 int main(int argc, char *argv[]) {
     unsigned int image;

@@ -48,7 +48,7 @@ __global__ void LaplacianOfGaussianCUDA(const unsigned char *input, unsigned cha
     }
 }
 
-void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations) {
+void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations, int blockSizeX, int blockSizeY) {
   
     
     unsigned char *donneesDst = nouvellesDonnees;
@@ -83,7 +83,7 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
         return;
     }
 
-    dim3 blockDim(16, 16);
+    dim3 blockDim(blockSizeX,blockSizeY);
     dim3 gridDim((largeur + blockDim.x - 1) / blockDim.x, (hauteur + blockDim.y - 1) / blockDim.y);
 
     cudaStream_t stream;
@@ -148,13 +148,15 @@ int main(int argc, char *argv[]) {
     unsigned char *nouvellesDonnees = new unsigned char[largeur * hauteur * bpp];
 
     int iterations = std::stoi(argv[2]);
+    int blockSizeX = std::stoi(argv[3]);
+    int blockSizeY = std::stoi(argv[4]);
 
-    LaplacienDeGaussienne(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations);
+    LaplacienDeGaussienne(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations,blockSizeX,blockSizeY);
 
     ilTexImage(largeur, hauteur, 1, bpp, format, IL_UNSIGNED_BYTE, nouvellesDonnees);
 
     ilEnable(IL_FILE_OVERWRITE);
-    ilSaveImage(argv[3]);
+    ilSaveImage(argv[5]);
 
     ilDeleteImages(1, &image);
 
