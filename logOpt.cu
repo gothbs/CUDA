@@ -53,7 +53,6 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
     
     unsigned char *donneesDst = nouvellesDonnees;
     unsigned char *donneesSrc = donnees;
-    unsigned char *donneesDst = nouvellesDonnees;
 
     unsigned char *donneesSrcDevice;
     unsigned char *donneesDstDevice;
@@ -71,7 +70,7 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
     cudaStatus = cudaMalloc((void **)&donneesDstDevice, size);
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de l'allocation de mémoire sur le GPU pour les données de destination" << std::endl;
-        cudaFree(devDonnees);
+        cudaFree(donneesDstDevice);
         return;
     }
 
@@ -79,8 +78,8 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
 
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de la copie des données source de l'hôte vers le GPU" << std::endl;
-        cudaFree(devDonnees);
-        cudaFree(devNouvellesDonnees);
+        cudaFree(donneesDstDevice);
+        cudaFree(donneesSrc);
         return;
     }
 
@@ -91,8 +90,8 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
     cudaStatus = cudaStreamCreate(&stream);
     if (cudaStatus != cudaSuccess) {
         std::cerr << "Erreur lors de la création du stream CUDA" << std::endl;
-        cudaFree(devDonnees);
-        cudaFree(devNouvellesDonnees);
+        cudaFree(donneesDstDevice);
+        cudaFree(donneesSrc);
         return;
     }
 
@@ -103,8 +102,8 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
         cudaStatus = cudaGetLastError();
         if (cudaStatus != cudaSuccess) {
             std::cerr << "Erreur lors de l'exécution du kernel CUDA : " << cudaGetErrorString(cudaStatus) << std::endl;
-            cudaFree(devDonnees);
-            cudaFree(devNouvellesDonnees);
+            cudaFree(donneesDstDevice);
+            cudaFree(donneesSrc);
             cudaStreamDestroy(stream);
             return;
         }
