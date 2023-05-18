@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <chrono>
 #include <IL/il.h>
 #include <cuda_runtime.h>
 
@@ -95,8 +96,14 @@ int main(int argc, char *argv[]) {
     int blockSizeX = std::stoi(argv[3]);
     int blockSizeY = std::stoi(argv[4]);
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     // Appliquer l'opérateur de Sobel sur l'image avec le nombre d'itérations spécifié
     SobelGPU(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations, blockSizeX, blockSizeY);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Temps de calcu gpu flouSobelOperator : " << elapsed.count() << " secondes" << std::endl;
 
     // Mettre à jour l'image avec les données traitées
     ilTexImage(largeur, hauteur, 1, bpp, format, IL_UNSIGNED_BYTE, nouvellesDonnees);

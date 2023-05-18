@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <chrono>
 #include <IL/il.h>
 
 // Normaliser le noyau du filtre gaussien
@@ -80,8 +81,14 @@ int main(int argc, char *argv[]) {
 
     int iterations = std::stoi(argv[2]);
 
+    // Mesurer le temps de calcul
+    auto start = std::chrono::high_resolution_clock::now();
     // Appliquer le flou gaussien sur l'image avec le nombre d'itérations spécifié
     flouGaussien(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Temps de calcul cpu flouGaussien : " << elapsed.count() << " secondes" << std::endl;
 
     // Mettre à jour l'image avec les données traitées
     ilTexImage(largeur, hauteur, 1, bpp, format, IL_UNSIGNED_BYTE, nouvellesDonnees);

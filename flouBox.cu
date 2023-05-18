@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <chrono>
 #include <IL/il.h>
 #include <cuda_runtime.h>
 
@@ -76,8 +77,14 @@ int main(int argc, char *argv[]) {
     int blockSizeX = std::stoi(argv[3]);
     int blockSizeY = std::stoi(argv[4]);
 
+     // Mesurer le temps de calcul
+    auto start = std::chrono::high_resolution_clock::now();
+
     // Appliquer le flou boîte sur l'image avec le nombre d'itérations spécifié
     FlouBoiteGPU(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations, blockSizeX, blockSizeY);
+
+    std::cout << "Temps de calcul gpu flouBox : " << elapsed.count() << " secondes" << std::endl;
+
 
     // Mettre à jour l'image avec les données traitées
     ilTexImage(largeur, hauteur, 1, bpp, format, IL_UNSIGNED_BYTE, nouvellesDonnees);

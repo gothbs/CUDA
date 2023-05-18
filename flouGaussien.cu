@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <chrono>
 #include <IL/il.h>
 #include <cuda_runtime.h>
 
@@ -103,7 +104,13 @@ int main(int argc, char *argv[]) {
     int blockSizeX = std::stoi(argv[3]);
     int blockSizeY = std::stoi(argv[4]);
 
+    auto start = std::chrono::high_resolution_clock::now();
+    
     flouGaussienGPU(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations, blockSizeX, blockSizeY);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Temps de calcul gpu flouGaussien : " << elapsed.count() << " secondes" << std::endl;
 
     ilTexImage(largeur, hauteur, 1, bpp, format, IL_UNSIGNED_BYTE, nouvellesDonnees);
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <chrono>
 #include <IL/il.h>
 
 void FlouBoite(unsigned char *donnees, unsigned char *nouvellesDonnees, int largeur, int hauteur, int bpp, int iterations) {
@@ -61,8 +62,15 @@ int main(int argc, char *argv[]) {
 
     int iterations = std::stoi(argv[2]);
 
+    // Mesurer le temps de calcul
+    auto start = std::chrono::high_resolution_clock::now();
+
     // Appliquer le flou boîte sur l'image avec le nombre d'itérations spécifié
     FlouBoite(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Temps de calcul cpu flouBox : " << elapsed.count() << " secondes" << std::endl;
 
     // Mettre à jour l'image avec les données traitées
     ilTexImage(largeur, hauteur, 1, bpp, format, IL_UNSIGNED_BYTE, nouvellesDonnees);
@@ -76,6 +84,7 @@ int main(int argc, char *argv[]) {
 
     // Libérer la mémoire allouée pour les nouvelles données de l'image
     delete[] nouvellesDonnees;
+
 
     return 0;
 }
