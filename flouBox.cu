@@ -82,7 +82,9 @@ int main(int argc, char *argv[]) {
 
     // Appliquer le flou boîte sur l'image avec le nombre d'itérations spécifié
     FlouBoiteGPU(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations, blockSizeX, blockSizeY);
-
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
     std::cout << "Temps de calcul gpu flouBox : " << elapsed.count() << " secondes" << std::endl;
 
 
