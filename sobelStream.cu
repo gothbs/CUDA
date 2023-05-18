@@ -70,12 +70,9 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
 
     size_t sharedMemSize = 3 * 3 * sizeof(int);
 
-    for (int i = 0; i < iterations; ++i) {
-        if (i % 2 == 0) {
-            SobelCUDA<<<gridDim, blockDim, sharedMemSize, stream1>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
-        } else {
-            SobelCUDA<<<gridDim, blockDim, sharedMemSize, stream2>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
-        }
+   
+   
+        SobelCUDA<<<gridDim, blockDim, sharedMemSize, stream1>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
 
         cudaError_t cudaStatus = cudaGetLastError();
         if (cudaStatus != cudaSuccess) {
@@ -86,7 +83,7 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
         }
 
         std::swap(donneesSrcDevice, donneesDstDevice);
-    }
+    
 
     cudaMemcpyAsync(donneesDst, donneesDstDevice, size, cudaMemcpyDeviceToHost, stream1);
     cudaMemcpyAsync(donneesDst, donneesDstDevice, size, cudaMemcpyDeviceToHost, stream2);
