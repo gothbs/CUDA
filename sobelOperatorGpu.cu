@@ -24,7 +24,7 @@ __global__ void SobelCUDA(const unsigned char *input, unsigned char *output, int
                         gradY += pixel * sobelY[ky + 1][kx + 1];
                     }
                 }
-                int magnitude = sqrt(gradX * gradX + gradY * gradY);
+                int magnitude = sqrtf(gradX * gradX + gradY * gradY);
                 output[index + c] = magnitude > 255 ? 255 : magnitude;
             }
         }
@@ -64,8 +64,7 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
             return;
         }
 
-        cudaMemcpy(donneesSrcDevice, donneesDstDevice, size, cudaMemcpyDeviceToDevice);
-
+        std::swap(donneesSrcDevice, donneesDstDevice);
     }
 
     cudaMemcpy(nouvellesDonnees, donneesDstDevice, size, cudaMemcpyDeviceToHost);
