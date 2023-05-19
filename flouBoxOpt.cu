@@ -83,7 +83,6 @@ void FlouBoiteGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int l
     }
 
     cudaStreamDestroy(stream1);
-    cudaStreamDestroy(stream2);
 
     cudaMemcpyAsync(donneesDst, donneesSrcDevice, size, cudaMemcpyDeviceToHost);
     cudaStatus = cudaGetLastError();
