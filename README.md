@@ -13,3 +13,4 @@
         - de la forme suivante XXXOpt 
         - ajout de la mémoire partagée au niveau du stream  et l'utilisation de stream afin d'executer les itération en asynchrone
         - Les paramètres sont les mêmes que coté gpu basic   
+        
