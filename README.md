@@ -1,7 +1,7 @@
 # CUDA
 
  - Le make produit 12 executables :
-    - Les 4 premiers sont le coté cpu , elles prennent en paramètre l'image à flitre  
+    - Les 4 premiers sont du coté cpu , elles prennent en paramètre l'image à flitrer
         - le nombre de fois que l'on souhaite appliquer le filtre et le nom de l'image produite
         - exemple : ./flouBox in.jpg 4 out_in.jpg
 
