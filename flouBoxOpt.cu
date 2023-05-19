@@ -66,29 +66,20 @@ void FlouBoiteGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int l
     dim3 gridSize((largeur + blockSize.x - 1) / blockSize.x, (hauteur + blockSize.y - 1) / blockSize.y);
 
     // Création
-    cudaStream_t stream1, stream2;
+    cudaStream_t stream1;
     cudaStreamCreate(&stream1);
-    cudaStreamCreate(&stream2);
     for (int i = 0; i < iterations; ++i) {
         if (i % 2 == 0) {
             cudaFlouBoite<<<gridSize, blockSize, blockSize.x * blockSize.y * bpp * sizeof(unsigned char), stream1>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
         } else {
-            cudaFlouBoite<<<gridSize, blockSize, blockSize.x * blockSize.y * bpp * sizeof(unsigned char), stream2>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
+            cudaFlouBoite<<<gridSize, blockSize, blockSize.x * blockSize.y * bpp * sizeof(unsigned char), stream1>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
         }
 
-        cudaStatus = cudaGetLastError();
-        if (cudaStatus != cudaSuccess) {
-            std::cerr << "Erreur lors de l'exécution du kernel CUDA" << std::endl;
-            cudaFree(donneesSrcDevice);
-            cudaFree(donneesDstDevice);
-            return;
-        }
 
         std::swap(donneesSrcDevice, donneesDstDevice);
 
-        // Synchronisation des streams
+        // Synchronisation de streams
         cudaStreamSynchronize(stream1);
-        cudaStreamSynchronize(stream2);
     }
 
     cudaStreamDestroy(stream1);

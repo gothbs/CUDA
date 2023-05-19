@@ -73,14 +73,6 @@ void SobelGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, int large
     for (int i = 0; i < iterations; ++i) {
         SobelCUDA<<<gridDim, blockDim, sharedMemSize, stream>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
 
-        cudaError_t cudaStatus = cudaGetLastError();
-        if (cudaStatus != cudaSuccess) {
-            std::cerr << "Erreur lors de l'exécution du kernel CUDA : " << cudaGetErrorString(cudaStatus) << std::endl;
-            cudaFree(donneesSrcDevice);
-            cudaFree(donneesDstDevice);
-            return;
-        }
-
         std::swap(donneesSrcDevice, donneesDstDevice);
     }
 

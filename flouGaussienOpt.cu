@@ -68,7 +68,7 @@ void flouGaussienGPU(unsigned char *donnees, unsigned char *nouvellesDonnees, in
 
     cudaMemcpy(devDonneesSrc, donnees, largeur * hauteur * bpp * sizeof(unsigned char), cudaMemcpyHostToDevice);
 
-    dim3 blockSize(blockSizeX, blockSizeY); 
+    dim3 blockDim(blockSizeX, blockSizeY); 
     dim3 gridDim((largeur + blockDim.x - 1) / blockDim.x, (hauteur + blockDim.y - 1) / blockDim.y);
 
     size_t sharedMemSize = 5 * 5 * sizeof(float);
@@ -121,7 +121,6 @@ int main(int argc, char *argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
     
     flouGaussienGPU(donnees, nouvellesDonnees, largeur, hauteur, bpp, iterations, blockSizeX, blockSizeY);
-    
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
     std::cout << "Temps de calcul gpu flouGaussien optimal : " << elapsed.count() << " secondes" << std::endl;

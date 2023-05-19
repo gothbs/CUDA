@@ -100,14 +100,6 @@ void LaplacienDeGaussienne(unsigned char *donnees, unsigned char *nouvellesDonne
 
     for (int i = 0; i < iterations; ++i) {
         LaplacianOfGaussianCUDA<<<gridDim, blockDim, sharedMemSize, stream>>>(donneesSrcDevice, donneesDstDevice, largeur, hauteur, bpp);
-        cudaStatus = cudaGetLastError();
-        if (cudaStatus != cudaSuccess) {
-            std::cerr << "Erreur lors de l'exécution du kernel CUDA : " << cudaGetErrorString(cudaStatus) << std::endl;
-            cudaFree(donneesDstDevice);
-            cudaFree(donneesSrc);
-            cudaStreamDestroy(stream);
-            return;
-        }
 
         std::swap(donneesSrcDevice, donneesDstDevice);
     }
